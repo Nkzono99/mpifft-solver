@@ -1,5 +1,5 @@
-name = "mpifftw3_wrapper"
-version = "0.1.0"
+name = "mpifft-solver"
+version = "0.1.1"
 license = "Mit"
 author = "Nkzono99"
 maintainer = ""

@@ -47,7 +47,7 @@ contains
             obj%boundary_condition_terms(:, 3) = &
                 calc_boundary_term(boundary_values(:, 3), obj%fft3d%boundary_types(3), obj%dz)
         else
-            obj%boundary_condition_terms(:) = 0.0d0
+            obj%boundary_condition_terms(:, :) = 0.0d0
         end if
 
         allocate (obj%modified_wave_number(local_block%sizes(1), &

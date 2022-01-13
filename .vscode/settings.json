@@ -1,0 +1,17 @@
+{
+    "fortran.includePaths": [
+        "${workspaceFolder}/src"
+    ],
+    "fortran-ls.lowercaseIntrinsics": true,
+    "fortran.formatting.formatter": "Disabled",
+    "fortran.linterExtraArgs": [
+        "-Wall",
+        "-I${workspaceFolder}/src",
+        "-I${workspaceFolder}/src/block",
+        "-I${workspaceFolder}/src/fft",
+        "-I${workspaceFolder}/test",
+        "-I${workspaceFolder}/build/dependencies/futils/src",
+        "-I${workspaceFolder}/lib/mpi/msmpi/include",
+    ],
+    "fortran-ls.enableCodeActions": true,
+}

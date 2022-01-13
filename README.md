@@ -1,2 +1,2 @@
-# mpifftw3_wrapper
-FFTW3 wrapper for Fortran with MPI.
+# mpifft-solverr
+FFT solver for Fortran wrapped with FFTW3 using MPI.

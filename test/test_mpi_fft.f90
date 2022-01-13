@@ -98,7 +98,7 @@ program test_mpifft
     end do
 
     fft_factory = new_MPIFFTW3_Factory(local_block, global_block, myrank, psize, comm)
-    fft = fft_factory%create([BoundaryType_Periodic, BoundaryType_Periodic, BoundaryType_Periodic])
+    fft = fft_factory%create([BoundaryType_Periodic, BoundaryType_Dirichlet, BoundaryType_Neumann])
 
     call fft%forward(original(:, :, :), forwarded(:, :, :))
     call fft%backward(forwarded(:, :, :), backwarded(:, :, :))

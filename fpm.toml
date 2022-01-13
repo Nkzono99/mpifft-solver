@@ -1,0 +1,20 @@
+name = "mpifftw3_wrapper"
+version = "0.1.0"
+license = "Mit"
+author = "Nkzono99"
+maintainer = ""
+copyright = "Copyright 2022, Nkzono99"
+
+[build]
+auto-executables = true
+auto-tests = true
+auto-examples = true
+
+external-modules = ["mpi"]
+link = ["mpi"]
+
+[install]
+library = true
+
+[dependencies]
+futils = { git = "https://github.com/Nkzono99/futils.git"}

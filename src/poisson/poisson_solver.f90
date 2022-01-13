@@ -14,19 +14,21 @@ module m_poisson_solver
         double precision, private :: dz
         class(t_MPI_FFTExecutor3d), allocatable, private :: fft3d
         double precision, allocatable, private :: modified_wave_number(:, :, :)
+        double precision, private :: boundary_condition_terms(2, 3)
     contains
         procedure :: solve => poissonSolver3d_solve
     end type
 
 contains
 
-    function new_PoissonSolver3d(local_block, global_block, fft3d, dx, dy, dz) result(obj)
+    function new_PoissonSolver3d(local_block, global_block, fft3d, dx, dy, dz, boundary_values) result(obj)
         type(t_Block), intent(in) :: local_block
         type(t_Block), intent(in) :: global_block
         class(t_MPI_FFTExecutor3d), intent(in) :: fft3d
         double precision, intent(in) :: dx
         double precision, intent(in), optional :: dy
         double precision, intent(in), optional :: dz
+        double precision, intent(in), optional :: boundary_values(2, 3)
         type(t_PoissonSolver3d) :: obj
 
         integer :: start(3), end(3)
@@ -36,6 +38,17 @@ contains
         obj%dx = dx
         obj%dy = get_default(dy, dx)
         obj%dz = get_default(dz, dx)
+
+        if (present(boundary_values)) then
+            obj%boundary_condition_terms(:, 1) = &
+                calc_boundary_term(boundary_values(:, 1), obj%fft3d%boundary_types(1), obj%dx)
+            obj%boundary_condition_terms(:, 2) = &
+                calc_boundary_term(boundary_values(:, 2), obj%fft3d%boundary_types(2), obj%dy)
+            obj%boundary_condition_terms(:, 3) = &
+                calc_boundary_term(boundary_values(:, 3), obj%fft3d%boundary_types(3), obj%dz)
+        else
+            obj%boundary_condition_terms(:) = 0.0d0
+        end if
 
         allocate (obj%modified_wave_number(local_block%sizes(1), &
                                            local_block%sizes(2), &
@@ -62,6 +75,34 @@ contains
                 obj%modified_wave_number(ix, iy, iz) = wn
             end block
         end do
+    end function
+
+    function calc_boundary_term(boundary_values, boundary_type, gridwidth) result(terms)
+        double precision, intent(in) :: boundary_values(2)
+        integer, intent(in) :: boundary_type
+        double precision, intent(in) :: gridwidth
+        double precision :: terms(2)
+
+        select case (boundary_type)
+        case (BoundaryType_Periodic)
+            terms(:) = boundary_values(:)
+
+        case (BoundaryType_Dirichlet)
+            terms(:) = [-boundary_values(1)/(gridwidth*gridwidth), &
+                        -boundary_values(2)/(gridwidth*gridwidth)]
+
+        case (BoundaryType_Neumann)
+            terms(:) = [2.0d0*boundary_values(1)/gridwidth, &
+                        -2.0d0*boundary_values(2)/gridwidth]
+
+        case (BoundaryType_Dirichlet_Neumann)
+            terms(:) = [-boundary_values(1)/(gridwidth*gridwidth), &
+                        -2.0d0*boundary_values(2)/gridwidth]
+
+        case (BoundaryType_Neumann_Dirichlet)
+            terms(:) = [-boundary_values(1)/(gridwidth*gridwidth), &
+                        -2.0d0*boundary_values(2)/gridwidth]
+        end select
     end function
 
     function calc_wave_number(k, n, boundary_type) result(wn)
@@ -98,11 +139,21 @@ contains
         double precision, intent(in) :: f(:, :, :)
         double precision, intent(out) :: p(:, :, :)
 
+        double precision, allocatable :: ftmp(:, :, :)
         double precision, allocatable :: fk(:, :, :)
         double precision, allocatable :: pk(:, :, :)
 
+        allocate (ftmp, source=f)
         allocate (fk, mold=f)
         allocate (pk, mold=p)
+
+        ftmp(1, :, :) = ftmp(1, :, :) + self%boundary_condition_terms(1, 1)
+        ftmp(:, 1, :) = ftmp(:, 1, :) + self%boundary_condition_terms(1, 2)
+        ftmp(:, :, 1) = ftmp(:, :, 1) + self%boundary_condition_terms(1, 3)
+
+        ftmp(self%fft3d%nx, :, :) = ftmp(self%fft3d%nx, :, :) + self%boundary_condition_terms(2, 1)
+        ftmp(:, self%fft3d%ny, :) = ftmp(:, self%fft3d%ny, :) + self%boundary_condition_terms(2, 2)
+        ftmp(:, :, self%fft3d%nz) = ftmp(:, :, self%fft3d%nz) + self%boundary_condition_terms(2, 3)
 
         call self%fft3d%forward(f(:, :, :), fk(:, :, :))
 

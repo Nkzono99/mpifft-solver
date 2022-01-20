@@ -19,6 +19,10 @@ module m_poisson_solver
         procedure :: solve => poissonSolver3d_solve
     end type
 
+    private
+    public t_PoissonSolver3d
+    public new_PoissonSolver3d
+
 contains
 
     function new_PoissonSolver3d(local_block, global_block, fft3d, dx, dy, dz, boundary_values) result(obj)
@@ -105,7 +109,7 @@ contains
         end select
     end function
 
-    function calc_wave_number(k, n, boundary_type) result(wn)
+    pure function calc_wave_number(k, n, boundary_type) result(wn)
         integer, intent(in) :: k
         integer, intent(in) :: n
         integer, intent(in) :: boundary_type
@@ -161,4 +165,5 @@ contains
 
         call self%fft3d%backward(pk(:, :, :), p(:, :, :))
     end subroutine
+
 end module

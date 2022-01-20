@@ -1,5 +1,5 @@
 name = "mpifft-solver"
-version = "0.1.2"
+version = "0.1.3"
 license = "Mit"
 author = "Nkzono99"
 maintainer = ""
@@ -11,7 +11,7 @@ auto-tests = true
 auto-examples = true
 
 external-modules = ["mpi"]
-link = ["mpi"]
+# link = ["mpi"]
 
 [install]
 library = true

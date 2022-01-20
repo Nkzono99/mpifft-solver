@@ -131,13 +131,17 @@ contains
         end block
 
         block
+            class(t_FFTExecutor1d), pointer :: pxfft, pyfft, pzfft
             class(t_MPIBlockRebasor), pointer :: s2x, x2y, y2z, z2s
 
+            pxfft => xfft
+            pyfft => yfft
+            pzfft => zfft
             s2x => self%s2x
             x2y => self%x2y
             y2z => self%y2z
             z2s => self%z2s
-            mpifft3d = new_MPI_FFTExecutor3d(xfft, yfft, zfft, s2x, x2y, y2z, z2s)
+            mpifft3d = new_MPI_FFTExecutor3d(pxfft, pyfft, pzfft, s2x, x2y, y2z, z2s)
         end block
     end function
 

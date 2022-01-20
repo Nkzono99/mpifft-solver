@@ -1,5 +1,5 @@
 name = "mpifft-solver"
-version = "0.1.1"
+version = "0.1.2"
 license = "Mit"
 author = "Nkzono99"
 maintainer = ""
@@ -17,4 +17,4 @@ link = ["mpi"]
 library = true
 
 [dependencies]
-futils = { git = "https://github.com/Nkzono99/futils.git"}
+futils = { git = "https://github.com/Nkzono99/futils.git" }

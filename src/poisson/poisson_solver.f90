@@ -77,7 +77,7 @@ contains
         end do
     end function
 
-    function calc_boundary_term(boundary_values, boundary_type, gridwidth) result(terms)
+    pure function calc_boundary_term(boundary_values, boundary_type, gridwidth) result(terms)
         double precision, intent(in) :: boundary_values(2)
         integer, intent(in) :: boundary_type
         double precision, intent(in) :: gridwidth

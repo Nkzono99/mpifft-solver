@@ -12,7 +12,7 @@ module m_poisson_solver
         double precision, private :: dx
         double precision, private :: dy
         double precision, private :: dz
-        class(t_MPI_FFTExecutor3d), allocatable, private :: fft3d
+        class(t_MPI_FFTExecutor3d), pointer, private :: fft3d
         double precision, allocatable, private :: modified_wave_number(:, :, :)
         double precision, private :: boundary_condition_terms(2, 3)
     contains
@@ -28,7 +28,7 @@ contains
     function new_PoissonSolver3d(local_block, global_block, fft3d, dx, dy, dz, boundary_values) result(obj)
         type(t_Block), intent(in) :: local_block
         type(t_Block), intent(in) :: global_block
-        class(t_MPI_FFTExecutor3d), intent(in) :: fft3d
+        class(t_MPI_FFTExecutor3d), pointer, intent(in) :: fft3d
         double precision, intent(in) :: dx
         double precision, intent(in), optional :: dy
         double precision, intent(in), optional :: dz
@@ -38,7 +38,7 @@ contains
         integer :: start(3), end(3)
         integer :: kx, ky, kz
 
-        obj%fft3d = fft3d
+        obj%fft3d => fft3d
         obj%dx = dx
         obj%dy = get_default(dy, dx)
         obj%dz = get_default(dz, dx)
@@ -159,7 +159,7 @@ contains
         ftmp(:, self%fft3d%ny, :) = ftmp(:, self%fft3d%ny, :) + self%boundary_condition_terms(2, 2)
         ftmp(:, :, self%fft3d%nz) = ftmp(:, :, self%fft3d%nz) + self%boundary_condition_terms(2, 3)
 
-        call self%fft3d%forward(f(:, :, :), fk(:, :, :))
+        call self%fft3d%forward(ftmp(:, :, :), fk(:, :, :))
 
         pk(:, :, :) = f(:, :, :)/self%modified_wave_number(:, :, :)
 

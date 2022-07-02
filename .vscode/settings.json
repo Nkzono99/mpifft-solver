@@ -1,10 +1,10 @@
 {
-    "fortran.includePaths": [
+    "fortran.linter.includePaths": [
         "${workspaceFolder}/src"
     ],
     "fortran-ls.lowercaseIntrinsics": true,
     "fortran.formatting.formatter": "Disabled",
-    "fortran.linterExtraArgs": [
+    "fortran.linter.extraArgs": [
         "-Wall",
         "-I${workspaceFolder}/src",
         "-I${workspaceFolder}/src/block",
@@ -12,6 +12,7 @@
         "-I${workspaceFolder}/test",
         "-I${workspaceFolder}/build/dependencies/futils/src",
         "-I${workspaceFolder}/lib/mpi/msmpi/include",
+        "-I${workspaceFolder}/lib/fftw3/fftw-3.3.5-dll64",
     ],
     "fortran-ls.enableCodeActions": true,
 }

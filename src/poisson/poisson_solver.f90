@@ -15,6 +15,8 @@ module m_poisson_solver
         class(t_MPI_FFTExecutor3d), pointer, private :: fft3d
         double precision, allocatable, private :: modified_wave_number(:, :, :)
         double precision, private :: boundary_condition_terms(2, 3)
+        type(t_Block) :: local_block
+        type(t_Block) :: global_block
     contains
         procedure :: solve => poissonSolver3d_solve
     end type
@@ -42,6 +44,9 @@ contains
         obj%dx = dx
         obj%dy = get_default(dy, dx)
         obj%dz = get_default(dz, dx)
+
+        obj%local_block = local_block
+        obj%global_block = global_block
 
         if (present(boundary_values)) then
             obj%boundary_condition_terms(:, 1) = &
@@ -147,21 +152,28 @@ contains
         double precision, allocatable :: fk(:, :, :)
         double precision, allocatable :: pk(:, :, :)
 
+        integer :: axis
+
+        ! ftmp(:, :, :) = f(:, :, :)
         allocate (ftmp, source=f)
         allocate (fk, mold=f)
         allocate (pk, mold=p)
 
-        ftmp(1, :, :) = ftmp(1, :, :) + self%boundary_condition_terms(1, 1)
-        ftmp(:, 1, :) = ftmp(:, 1, :) + self%boundary_condition_terms(1, 2)
-        ftmp(:, :, 1) = ftmp(:, :, 1) + self%boundary_condition_terms(1, 3)
+        do axis = 1, 3
+            if (self%local_block%start(axis) == self%global_block%start(axis)) then
+                ftmp(self%local_block%start(axis), :, :) = ftmp(self%local_block%start(axis), :, :) &
+                                                           + self%boundary_condition_terms(1, axis)
+            end if
 
-        ftmp(self%fft3d%nx, :, :) = ftmp(self%fft3d%nx, :, :) + self%boundary_condition_terms(2, 1)
-        ftmp(:, self%fft3d%ny, :) = ftmp(:, self%fft3d%ny, :) + self%boundary_condition_terms(2, 2)
-        ftmp(:, :, self%fft3d%nz) = ftmp(:, :, self%fft3d%nz) + self%boundary_condition_terms(2, 3)
+            if (self%local_block%end(axis) == self%global_block%end(axis)) then
+                ftmp(self%local_block%end(axis), :, :) = ftmp(self%local_block%end(axis), :, :) &
+                                                         + self%boundary_condition_terms(2, axis)
+            end if
+        end do
 
         call self%fft3d%forward(ftmp(:, :, :), fk(:, :, :))
 
-        pk(:, :, :) = f(:, :, :)/self%modified_wave_number(:, :, :)
+        pk(:, :, :) = fk(:, :, :)/self%modified_wave_number(:, :, :)
 
         call self%fft3d%backward(pk(:, :, :), p(:, :, :))
     end subroutine
